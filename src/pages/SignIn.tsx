@@ -27,26 +27,29 @@ const SignIn: React.FC<SignInProps> = ({ onLogin }) => {
 
   const onSubmit = async (data: FormData) => {
     setError(null);
-
+  
     const signInData: Partial<FormData> = {
       password: data.password,
     };
-
+  
     if (signInMethod === "username") {
       signInData.username = data.username;
     } else if (signInMethod === "email") {
       signInData.email = data.email;
     }
-
+  
     try {
-      const response = await api.post("/users/login", data);
+      const response = await api.post("/users/login", signInData);
       const { token, userId } = response.data;
-
+  
+      // Save and immediately display the token in the console
       localStorage.setItem("token", token);
       localStorage.setItem("userId", userId);
-
+      console.log("Token received immediately after login:", token);
+  
+      // Update authentication
       onLogin();
-      navigate("/home");
+      navigate("/");
     } catch (err: any) {
       if (err.response && err.response.data.message) {
         setError(err.response.data.message);
@@ -55,6 +58,7 @@ const SignIn: React.FC<SignInProps> = ({ onLogin }) => {
       }
     }
   };
+  
 
   return (
     <Container className="mt-5">

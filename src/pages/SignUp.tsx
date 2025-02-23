@@ -11,7 +11,11 @@ type FormData = {
   password: string;
 };
 
-const SignUp: React.FC = () => {
+type SignUpProps = {
+  onSignUp: () => void;
+};
+
+const SignUp: React.FC<SignUpProps> = ({ onSignUp }) => {
   const {
     register,
     handleSubmit,
@@ -25,8 +29,9 @@ const SignUp: React.FC = () => {
     try {
       const response = await api.post("/users/signup", data);
       console.log("Registration successful:", response.data);
-      alert("Registration successful, going to sign in");
-      navigate("/signin");
+      alert("Registration successful, going to home");
+      onSignUp(); // Signal that the user is authenticated
+      navigate("/"); // Go to Home directly after registration
     } catch (err: any) {
       if (err.response && err.response.data.message) {
         setError(err.response.data.message); // Show specific message
