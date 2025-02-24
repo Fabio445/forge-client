@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Container, Row, Col, Button } from "react-bootstrap";
+import { Container, Row, Col, Button, Form } from "react-bootstrap";
 import api from "../api/axios";
 import TaskList from "../components/TaskList";
 import TaskModal from "../components/TaskModal";
@@ -13,11 +13,14 @@ type HomeProps = {
 const Home: React.FC<HomeProps> = ({ onLogout }) => {
   const [tasks, setTasks] = useState<any[]>([]);
   const [showModal, setShowModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [newTask, setNewTask] = useState({
     title: "",
     description: "",
     completed: false,
   });
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedTask, setSelectedTask] = useState<any | null>(null);
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -32,7 +35,7 @@ const Home: React.FC<HomeProps> = ({ onLogout }) => {
           error.response.status === 401
         ) {
           localStorage.removeItem("token");
-          onLogout(); // Call logout
+          onLogout();
         }
       }
     };
@@ -51,6 +54,37 @@ const Home: React.FC<HomeProps> = ({ onLogout }) => {
     }
   };
 
+  const handleUpdateTask = async () => {
+    if (!selectedTask) return;
+    try {
+      const response = await api.put(`/tasks/${selectedTask.id}`, selectedTask);
+      setTasks((prevTasks) =>
+        prevTasks.map((task) =>
+          task.id === selectedTask.id ? response.data : task
+        )
+      );
+      setSelectedTask(null);
+      setShowEditModal(false); // Close the edit modal
+    } catch (error) {
+      console.error("Error updating task:", error);
+    }
+  };
+
+  const handleDeleteTask = async (taskId: string) => {
+    try {
+      await api.delete(`/tasks/${taskId}`);
+      setTasks((prevTasks) =>
+        prevTasks.filter((task) => task._id !== taskId && task.id !== taskId)
+      );
+    } catch (error) {
+      console.error("Error deleting task:", error);
+    }
+  };
+
+  const filteredTasks = tasks.filter((task) =>
+    task.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <Container className="mt-5">
       <Row>
@@ -62,26 +96,62 @@ const Home: React.FC<HomeProps> = ({ onLogout }) => {
             </Button>
           </div>
 
-          <Button
-            variant="primary"
-            className="w-100"
-            onClick={() => setShowModal(true)}
-          >
-            Add Task
-          </Button>
+          <Row className="mb-3">
+            <Col>
+              <Form.Control
+                type="text"
+                placeholder="Search tasks..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </Col>
+            <Col xs="auto">
+              <Button variant="primary" onClick={() => setShowModal(true)}>
+                Add Task
+              </Button>
+            </Col>
+          </Row>
 
-          {/* Modal with the form */}
+          {/* Modal to add a new task */}
           <TaskModal
             show={showModal}
             handleClose={() => setShowModal(false)}
             handleSave={handleAddTask}
-            title="Add New Task"
+            title="Create New Task"
+            type="create"
           >
             <TaskForm task={newTask} setTask={setNewTask} />
           </TaskModal>
 
+          {/* Modal to edit the selected task */}
+          {selectedTask && (
+            <TaskModal
+              show={showEditModal}
+              handleClose={() => {
+                setShowEditModal(false);
+                setSelectedTask(null);
+              }}
+              handleSave={handleUpdateTask}
+              title="Edit Task"
+              type="edit"
+            >
+              <TaskForm task={selectedTask} setTask={setSelectedTask} />
+            </TaskModal>
+          )}
+
           <h2 className="mt-4">Your Tasks</h2>
-          <TaskList tasks={tasks} />
+          {filteredTasks.length > 0 ? (
+            <TaskList
+              tasks={filteredTasks}
+              onTaskClick={(task) => {
+                setSelectedTask(task);
+                setShowEditModal(true);
+              }}
+              onDeleteTask={handleDeleteTask}
+            />
+          ) : (
+            <p>No tasks to show</p>
+          )}
         </Col>
       </Row>
     </Container>

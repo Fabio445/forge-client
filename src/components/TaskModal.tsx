@@ -1,13 +1,13 @@
-// src/components/TaskModal.tsx
 import React from "react";
 import { Modal, Button } from "react-bootstrap";
 
 interface TaskModalProps {
   show: boolean;
   handleClose: () => void;
-  handleSave: () => void;
+  handleSave?: () => void;
   title: string;
   children: React.ReactNode;
+  type?: "create" | "edit" | "delete" | "view";
 }
 
 const TaskModal: React.FC<TaskModalProps> = ({
@@ -16,6 +16,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
   handleSave,
   title,
   children,
+  type = "edit",
 }) => {
   return (
     <Modal show={show} onHide={handleClose}>
@@ -25,11 +26,23 @@ const TaskModal: React.FC<TaskModalProps> = ({
       <Modal.Body>{children}</Modal.Body>
       <Modal.Footer>
         <Button variant="secondary" onClick={handleClose}>
-          Cancel
+          {type === "delete" ? "Cancel" : "Cancel"}
         </Button>
-        <Button variant="primary" onClick={handleSave}>
-          Save Task
-        </Button>
+        {type === "create" && handleSave && (
+          <Button variant="success" onClick={handleSave}>
+            Create Task
+          </Button>
+        )}
+        {type === "edit" && handleSave && (
+          <Button variant="primary" onClick={handleSave}>
+            Save Changes
+          </Button>
+        )}
+        {type === "delete" && handleSave && (
+          <Button variant="danger" onClick={handleSave}>
+            Delete
+          </Button>
+        )}
       </Modal.Footer>
     </Modal>
   );
