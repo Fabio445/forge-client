@@ -120,7 +120,7 @@ const Home: React.FC<HomeProps> = ({ onLogout }) => {
             title="Create New Task"
             type="create"
           >
-            <TaskForm task={newTask} setTask={setNewTask} />
+            <TaskForm task={newTask} setTask={setNewTask} type="create" />
           </TaskModal>
 
           {/* Modal to edit the selected task */}
@@ -135,7 +135,11 @@ const Home: React.FC<HomeProps> = ({ onLogout }) => {
               title="Edit Task"
               type="edit"
             >
-              <TaskForm task={selectedTask} setTask={setSelectedTask} />
+              <TaskForm
+                task={selectedTask}
+                setTask={setSelectedTask}
+                type="edit"
+              />
             </TaskModal>
           )}
 

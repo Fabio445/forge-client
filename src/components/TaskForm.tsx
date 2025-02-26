@@ -10,9 +10,14 @@ interface Task {
 interface TaskFormProps {
   task: Task;
   setTask: (task: Task) => void;
+  type?: "create" | "edit" | "view";
 }
 
-const TaskForm: React.FC<TaskFormProps> = ({ task, setTask }) => {
+const TaskForm: React.FC<TaskFormProps> = ({
+  task,
+  setTask,
+  type = "create",
+}) => {
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -48,18 +53,19 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, setTask }) => {
           onChange={handleChange}
         />
       </Form.Group>
-
-      <Form.Group>
-        <Form.Label>Completed</Form.Label>
-        <Form.Select
-          name="completed"
-          value={task.completed.toString()}
-          onChange={handleChange}
-        >
-          <option value="false">False</option>
-          <option value="true">True</option>
-        </Form.Select>
-      </Form.Group>
+      {type === "edit" && handleChange && (
+        <Form.Group>
+          <Form.Label>Completed</Form.Label>
+          <Form.Select
+            name="completed"
+            value={task.completed.toString()}
+            onChange={handleChange}
+          >
+            <option value="false">Pending</option>
+            <option value="true">Completed</option>
+          </Form.Select>
+        </Form.Group>
+      )}
     </Form>
   );
 };
